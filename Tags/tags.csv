@@ -1,0 +1,10 @@
+Кл4_отк,root.Valves.ExValve_4.CMD.Open
+Кл5_отк,root.Valves.ExValve_5.CMD.Open
+Кл6_отк,root.Valves.ExValve_6.CMD.Open
+Пр4_отк,root.Valves.ExValve_4.OpenPrc
+Пр5_отк,root.Valves.ExValve_5.OpenPrc
+Пр6_отк,root.Valves.ExValve_6.OpenPrc
+Дав4,root.Sensors.ExSensor_4.Pressure
+Дав5,root.Sensors.ExSensor_5.Pressure
+Дав6,root.Sensors.ExSensor_6.Pressure
+Кл4_зак,root.Valves.ExValve_4.CMD.Close

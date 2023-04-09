@@ -1,0 +1,20 @@
+begin
+Запуск малой печи
+Данная процедура выполняет запуск малой печи 4
+operation
+Открытие клапана
+Открытие клапана трубы подачи газа на малую печь 4
+[100.0]
+['Кл4_отк']
+condition
+Проверка условий
+Проверяем степень открытия клапана и давление в трубе перед печью
+[100.0, 90.0]
+['равно', '>']
+['Пр4_отк', 'Дав4']
+end
+Конец процедуры
+Малая печь 4-е успешно запущена
+tags
+['Кл4_отк', 'Кл5_отк', 'Кл6_отк', 'Пр4_отк', 'Пр5_отк', 'Пр6_отк', 'Дав4', 'Дав5', 'Дав6', 'Кл4_зак']
+['root.Valves.ExValve_4.CMD.Open', 'root.Valves.ExValve_5.CMD.Open', 'root.Valves.ExValve_4.CMD.Open', 'root.Valves.ExValve_4.OpenPrc', 'root.Valves.ExValve_5.OpenPrc', 'root.Valves.ExValve_6.OpenPrc', 'root.Sensors.ExSensor_4.Pressure', 'root.Sensors.ExSensor_5.Pressure', 'root.Sensors.ExSensor_6.Pressure', 'root.Valves.ExValve_4.CMD.Close']
