@@ -30,8 +30,7 @@ class project_list_widget(QWidget):
 
         self.hbox = QHBoxLayout() 
         self.table      = QTableWidget()
-        # Единичный выбор
-        self.table.setSelectionMode(QAbstractItemView.SingleSelection)
+
         self.table_hh   = self.table.horizontalHeader()
         self.table_vh   = self.table.verticalHeader()
         self.table_vh.setVisible(False)

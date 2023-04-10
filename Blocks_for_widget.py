@@ -122,30 +122,25 @@ class Condition(QWidget):
     def execute_block(self):
         print('(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧')
 
-        if self.parent.status == 2:
-            self.recolor_border(4, 'yellow')
+        if self.comment != '':
+            self.parent.parent.action_widget.addAction(f'Процедура "{self.parent.project_name}": '+f'{self.comment}')
 
-        elif self.parent.status == 1:
-            self.recolor_border(4, 'green')
-            if self.comment != '':
-                self.parent.parent.action_widget.addAction(f'Процедура "{self.parent.project_name}": '+f'{self.comment}')
+        self.indicator_condition = False
 
-            self.indicator_condition = False
-            while not self.indicator_condition and self.parent.status == 1:
-                self.actual_value()
-                QtTest.QTest.qWait(500)
+        while not self.indicator_condition:
+            self.actual_value()
+            QtTest.QTest.qWait(500)
 
-            if self.parent.status == 2:
-                self.recolor_border(4, 'yellow')
-
-            if self.parent.status == 1:
-                self.parent.execution_queue.pop(0)
-                self.parent.execution_queue[0].execute_block()
 
     def actual_value(self):
         # Предполагаем, что все верны, если какое-то условие неверно - то будет изменение
         self.indicator_condition = True
         for i in range(len(self.condition_tags)):
+            if not self.parent.pause.is_set():
+                self.recolor_border(4, 'yellow')
+                self.parent.pause.wait()
+                self.recolor_border(4, 'green')
+
             value = float(self.parent.parent.parent.opc_client.get_values([self.parent.dict_nods[self.condition_tags[i]]])[0])
             self.table.setItem(i, 1, QTableWidgetItem(str(value)))
             self.table.item(i, 1).setTextAlignment(Qt.AlignVCenter | Qt.AlignHCenter)
@@ -266,21 +261,20 @@ class Operation(QWidget):
 
     def execute_block(self):
         print('(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧')
-        if self.parent.status == 2:
-            self.recolor_border(4, 'yellow')
-        elif self.parent.status == 1:
-            self.recolor_border(4, 'green')
-            if self.comment != '':
-                self.parent.parent.action_widget.addAction(f'Процедура "{self.parent.project_name}": '+f'{self.comment}')
 
-            self.actual_value()
-            QtTest.QTest.qWait(3000)
-            self.parent.execution_queue.pop(0)
-            self.parent.execution_queue[0].execute_block()
+        if self.comment != '':
+            self.parent.parent.action_widget.addAction(f'Процедура "{self.parent.project_name}": '+f'{self.comment}')
+
+        self.actual_value()
+        QtTest.QTest.qWait(3000)
 
     def actual_value(self):
         try:
             for i in range(len(self.condition_tags)):
+                if not self.parent.pause.is_set():
+                    self.recolor_border(4, 'yellow')
+                    self.parent.pause.wait()
+                    self.recolor_border(4, 'green')
                 self.parent.parent.parent.opc_client.set_values([self.parent.dict_nods[self.condition_tags[i]]], [float(self.condition_values[i])])
         except:
             QMessageBox.critical(self, "Ошибка команды", f"В процедуре {tab.text()} произошла ошибка при подаче команды по OPC", QMessageBox.Ok)
@@ -337,7 +331,6 @@ class Begin(QWidget):
         self.Name_Label_box.addStretch(1)
         self.Name_Label_box.setStretch(1, 4)
 
-
         # Layout комментария QLabel
         self.comment_label_box = QHBoxLayout()
         self.comment_label = QLabel(self) 
@@ -347,7 +340,6 @@ class Begin(QWidget):
         self.comment_label_font = QFont('Times', 10)
         self.comment_label.setFont(self.comment_label_font)
         self.comment_label_box.addWidget(self.comment_label)
-
 
         # Помещение всех Layout в главный с коэффициентами растяжения
         self.mainBox.addLayout(self.Name_Label_box)
@@ -361,15 +353,9 @@ class Begin(QWidget):
 
     def execute_block(self):
         print('(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧')
-        if self.parent.status == 2:
-            self.recolor_border(4, 'yellow')
-        elif self.parent.status == 1:
-            self.recolor_border(4, 'green')
-            if self.comment != '':
-                self.parent.parent.action_widget.addAction(f'Процедура "{self.parent.project_name}": '+f'{self.comment}')
-            self.parent.execution_queue.pop(0)
-            QtTest.QTest.qWait(5000)
-            self.parent.execution_queue[0].execute_block()
+        if self.comment != '':
+            self.parent.parent.action_widget.addAction(f'Процедура "{self.parent.project_name}": '+f'{self.comment}')
+        QtTest.QTest.qWait(5000)
 
     def resizeEvent(self, a0):
         """
@@ -393,11 +379,8 @@ class End(QWidget):
         self.son = None
 
         # Сигнал
-        print('gg')
         self.signal = Communicate()
-        print('ggg')
         self.signal.c.connect(self.accept)
-        print('gggg')
 
         self.active = False
         self.parent = parent
@@ -457,15 +440,11 @@ class End(QWidget):
     def execute_block(self):
         print('(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧')
 
-        self.recolor_border(4, 'green')
         if self.comment != '':
             self.parent.parent.action_widget.addAction(f'Процедура "{self.parent.project_name}": ' + f'{self.comment}')
 
-        self.parent.execution_queue.pop(0)
         self.parent.parent.action_widget.addAction(f'Процедура "{self.parent.project_name}" успешно завершена')
         self.parent.item.setBackground(QColor(0, 255, 255))
-        self.parent.status = 3
-        self.signal.c.emit()
 
     def accept(self):
         msg = QMessageBox()

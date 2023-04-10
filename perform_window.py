@@ -15,11 +15,8 @@ class Perform(QWidget):
     def __init__(self, parent = None):
         # Инициализация родительского класса
         super().__init__(parent)
-        #self.setGeometry(0,0,1520,1000)
         self.parent = parent
-        self.move(0,0)
-        #self.showMaximized()
-        #self.setMinimumSize(1024, 768)
+        self.move(0, 0)
         self.opc_client = None
         self.initUI()
 
@@ -110,26 +107,18 @@ class right_widget(QWidget):
                             self.dict_name_open_procedures[name_item] = scroll
                             self.tab_main.addTab(scroll, name_item)
 
-                            # События "Пауза" и "Стоп"
-                            pause = threading.Event()
-                            stop = threading.Event()
-
                             # Поток для выполнения
-                            stream = threading.Thread(target=self.dict_name_open_procedures[name_item].widget.start_procedure, args=(pause, stop))
+                            stream = threading.Thread(target=scroll.widget.execute_procedure)
                             self.dict_streams[name_item] = stream
 
-                        if self.dict_name_open_procedures[name_item].widget.indicator_nods == 0:
-                            self.dict_name_open_procedures[name_item].widget.defining_nodes()
+                        procedure = self.dict_name_open_procedures[name_item].widget
+                        if procedure.indicator_nods == 0:
+                            procedure.defining_nodes()
 
-                        if self.dict_name_open_procedures[name_item].widget.status == 0:
+                        if not self.dict_streams[name_item].is_alive():
                             # Запуск
                             self.dict_streams[name_item].start()
 
-                        elif self.dict_name_open_procedures[name_item].widget.status == 2:
-                            # Продолжение выполнения
-                            self.dict_streams[name_item].start()
-
-                        # self.dict_streams[name_item].join()
 
                         # elif self.dict_name_open_procedures[name_item].widget.status == 3:
                         #     t = QMessageBox.question(self, "Повторное выполнение", f'Запустить процедуру "{self.dict_name_open_procedures[name_item ].widget.project_name}" снова?')
@@ -149,9 +138,22 @@ class right_widget(QWidget):
                 items = self.parent.project_list_widget.table.selectedItems()
                 if (len(items) != 0):
                     for item in items:
-                        if item.text() in self.dict_name_open_procedures.keys():
-                            # Ставим на паузу
-                            self.dict_name_open_procedures[item.text()].widget.pause_procedure()
+                        name_item = item.text()
+                        if name_item in self.dict_name_open_procedures.keys():
+
+                            procedure = self.dict_name_open_procedures[name_item].widget
+                            if self.dict_streams[name_item].is_alive():
+
+                                if procedure.pause.is_set():
+                                    # Ставим на паузу
+                                    procedure.pause.clear()
+                                    self.action_widget.addAction(f'Процедура "{procedure.project_name}" поставлена на паузу')
+                                    # Добавление фона иконке в левому виджете (желтый цвет)
+                                    item.setBackground(QColor(255, 255, 0))
+                                else:
+                                    self.action_widget.addAction(f'Процедура "{procedure.project_name}" снята с паузы')
+                                    # Отпускаем паузу
+                                    procedure.pause.set()
             except:
                 pass
         else:
@@ -165,11 +167,18 @@ class right_widget(QWidget):
                 items = self.parent.project_list_widget.table.selectedItems()
                 if (len(items) != 0):
                     for item in items:
-                        # Добавление в правый виджет, если это не было уже сделано двойным кликом
-                        if item.text() in self.dict_name_open_procedures.keys():
+                        name_item = item.text()
 
-                            # Ставим на паузу
-                            self.dict_name_open_procedures[item.text()].widget.stop_procedure()
+                        if name_item in self.dict_name_open_procedures.keys():
+                            procedure = self.dict_name_open_procedures[name_item].widget
+
+                            if self.dict_streams[name_item].is_alive():
+                                # Останавливаем выполнение
+                                procedure.stop.clear()
+                                self.action_widget.addAction(f'Процедура "{self.project_name}" полностью остановлена')
+                                procedure.remove_all_borders()
+                                # Добавление фона иконке в левому виджете (красный цвет)
+                                item.setBackground(QColor(255, 0, 0))
             except:
                 pass
         else:
@@ -316,8 +325,8 @@ class action_widget(QWidget):
     def addAction(self, message):
         rowPosition = 0
         self.table.insertRow(rowPosition)
-        print(rowPosition)
-        print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
+        # print(rowPosition)
+        # print(datetime.now().strftime("%d-%m-%Y %H:%M:%S"))
         self.table.setItem(rowPosition,0, QTableWidgetItem(datetime.now().strftime("%d-%m-%Y %H:%M:%S")))
         self.table.setItem(rowPosition,1, QTableWidgetItem(message))
         self.table.item(rowPosition,0).setTextAlignment(QtCore.Qt.AlignVCenter)

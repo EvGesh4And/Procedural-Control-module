@@ -5,6 +5,7 @@ from PyQt5.QtCore import Qt, QPoint
 
 from Blocks_for_widget import *
 from Draw_arrow import DrawingProcess
+import threading
 
 class Procedure_widget_scroll(QWidget):
     def __init__(self, parent = None, item = None):
@@ -55,15 +56,23 @@ class Procedure_widget(QWidget):
         self.ways_tags = []
         self.nodes = []
 
-        # Индикатор словаря
+        # Индикатор словаря нодов
         self.indicator_nods = 0
 
         # Словарь нодов
         self.dict_nods = {}
 
-        self.load_blocks()
+        # События "Пауза" и "Стоп"
+        self.pause = threading.Event()
+        # Событие паузы активно (вот такая вот обратная логика, если активна, то паузы нет)
+        self.pause.set()
+        self.stop = threading.Event()
+        # Для аналогичности
+        self.stop.set()
 
+        self.load_blocks()
         self.initUI()
+
 
     def load_blocks(self):
         filepath = 'Procedures' + '/' + self.project_name + '.txt'
@@ -169,39 +178,48 @@ class Procedure_widget(QWidget):
             block.drawLine.destination = self.widgets[i+1].pos() + QPoint(190, 10)
             block.drawLine.draw(self)
 
-    def start_procedure(self, pause, stop):
+    def execute_procedure(self):
         print('(◕‿◕)')
-
-        # Добавление фона иконке в левому виджете (зеленый цвет)
+        # Добавление фона иконке в левом виджете (зеленый цвет)
         self.item.setBackground(QColor(0, 255, 0))
+        # Список блоков на выполнение
+        self.execution_queue = self.widgets[:]
+        # Вывод сообщения о запуске
+        self.parent.action_widget.addAction(f'Запуск процедуры "{self.project_name}"')
 
-        if self.status == 0:
-            # Список блоков на выполнение
-            self.execution_queue = self.widgets[:]
-            # Вывод сообщения о запуске
-            self.parent.action_widget.addAction(f'Запуск процедуры "{self.project_name}"')
+        for block in self.execution_queue:
+            # if not self.stop.is_set():
+            #     self.parent.action_widget.addAction(f'Процедура "{self.project_name}" полностью остановлена')
+            #     self.remove_all_borders()
+            #     # Добавление фона иконке в левому виджете (красный цвет)
+            #     self.item.setBackground(QColor(255, 0, 0))
+            #     self.pause.set()
+            #     self.stop.set()
+            #     return
+            if not self.pause.is_set():
+                # Добавление фона иконке в левому виджете (красный цвет)
+                self.item.setBackground(QColor(255, 255, 0))
+                block.recolor_border(4, 'yellow')
+                self.pause.wait()
 
-        elif self.status == 2:
-            self.parent.action_widget.addAction(f'Процедура "{self.project_name}" снята с паузы')
+            block.recolor_border(4, 'green')
+            block.execute_block()
 
-        elif self.status == 3:
-            self.remove_all_borders()
-            # Список блоков на выполнение
-            self.execution_queue = self.widgets[:]
-            # Вывод сообщения о запуске
-            self.parent.action_widget.addAction(f'Повторный запуск процедуры "{self.project_name}"')
-
-        self.status = 1
-        self.execution_queue[0].execute_block()
+        # elif self.status == 2:
+        #     self.parent.action_widget.addAction(f'Процедура "{self.project_name}" снята с паузы')
+        #
+        # elif self.status == 3:
+        #     self.remove_all_borders()
+        #     # Список блоков на выполнение
+        #     self.execution_queue = self.widgets[:]
+        #     # Вывод сообщения о запуске
+        #     self.parent.action_widget.addAction(f'Повторный запуск процедуры "{self.project_name}"')
+        #
+        # self.status = 1
+        # self.execution_queue[0].execute_block()
 
     def pause_procedure(self):
         print("\(★ω★)/")
-        if self.status == 1:
-            self.parent.action_widget.addAction(f'Процедура "{self.project_name}" поставлена на паузу')
-            self.status = 2
-
-            # Добавление фона иконке в левому виджете (желтый цвет)
-            self.item.setBackground(QColor(255, 255, 0))
 
     def stop_procedure(self):
         print("＼(￣▽￣)／")
