@@ -240,11 +240,11 @@ class Input_OPC_url_widget(QDialog):
         vbox = QVBoxLayout()
         hbox1 = QHBoxLayout()
         #hbox1.addStretch(1)
-        label = QLabel('url OPC UA сервера')
+        label = QLabel('URL OPC UA сервера')
         hbox1.addWidget(label)
         #label.setAlignment(Qt.AlignCenter)
         label.setStyleSheet("border: 3px solid rgb(176,176,176); font: 16px")
-        self.line_url = QLineEdit()
+        self.line_url = QLineEdit('opc.tcp://192.168.56.102:62544')
         self.line_url.setStyleSheet("background-color: rgb(255,255,255);border: 1px solid rgb(128,128,128); font: 16px")
         hbox1.addWidget(self.line_url)
 

@@ -47,11 +47,11 @@ class Development(QMainWindow):
 
         self.menu = self.menubar.addMenu("Меню")
         self.get_names_tags = self.menu.addAction("Получить имена тэгов")
-        self.editing = self.menu.addAction('Открыть процедуру')
+        # self.editing = self.menu.addAction('Открыть процедуру')
         self.save = self.menu.addAction("Сохранить процедуру")
 
         self.get_names_tags.triggered.connect(self.development_workspace.get_tags)
-        self.editing.triggered.connect(self.development_workspace.editing_project)
+        # self.editing.triggered.connect(self.development_workspace.editing_project)
         self.save.triggered.connect(self.development_workspace.save_project)
 
         # Создание вложенных списков

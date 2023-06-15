@@ -188,16 +188,16 @@ class Procedure_widget(QWidget):
         self.parent.action_widget.addAction(f'Запуск процедуры "{self.project_name}"')
 
         for block in self.execution_queue:
-            # if not self.stop.is_set():
-            #     self.parent.action_widget.addAction(f'Процедура "{self.project_name}" полностью остановлена')
-            #     self.remove_all_borders()
-            #     # Добавление фона иконке в левому виджете (красный цвет)
-            #     self.item.setBackground(QColor(255, 0, 0))
-            #     self.pause.set()
-            #     self.stop.set()
-            #     return
-            if not self.pause.is_set():
+            if not self.stop.is_set():
+                self.remove_all_borders()
                 # Добавление фона иконке в левому виджете (красный цвет)
+                self.item.setBackground(QColor(255, 0, 0))
+                self.pause.set()
+                self.stop.set()
+                return
+
+            if not self.pause.is_set():
+                # Добавление фона иконке в левому виджете (желтый цвет)
                 self.item.setBackground(QColor(255, 255, 0))
                 block.recolor_border(4, 'yellow')
                 self.pause.wait()

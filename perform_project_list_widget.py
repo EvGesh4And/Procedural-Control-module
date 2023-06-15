@@ -6,9 +6,10 @@ from PyQt5.QtWidgets import QFileDialog, QMenuBar, QAction, QPushButton
 from PyQt5.QtCore import Qt , QTimer
 
 import sys
-
+import threading
+from perform_project_list_widget import *
+from perform_window_added_project import *
 from procedure_widget import Procedure_widget_scroll
-
 
 
 class project_list_widget(QWidget):
@@ -123,12 +124,27 @@ class project_list_widget(QWidget):
         self.table_hh.setDefaultSectionSize(self.gb.width() - 20)
 
     def cellDoubleClicked(self, row, column):
-        project_name = self.table.item(row, column).text()
-        if project_name not in self.parent.right_window.dict_name_open_procedures.keys():
-            scroll = Procedure_widget_scroll(self.parent.right_window, self.table.item(row, column))
-            self.parent.right_window.dict_name_open_procedures[project_name] = scroll
-            self.parent.right_window.tab_main.addTab(scroll, project_name)
-            print('scroll.width(), scroll.height()', scroll.width(), scroll.height() )
+        # project_name = self.table.item(row, column).text()
+        # if project_name not in self.parent.right_window.dict_name_open_procedures.keys():
+        #     scroll = Procedure_widget_scroll(self.parent.right_window, self.table.item(row, column))
+        #     self.parent.right_window.dict_name_open_procedures[project_name] = scroll
+        #     self.parent.right_window.tab_main.addTab(scroll, project_name)
+        #     print('scroll.width(), scroll.height()', scroll.width(), scroll.height() )
+        item = self.table.item(row, column)
+        name_item = item.text()
+        if (len(name_item) != 0):
+            # Добавление в правый виджет, если это не было уже сделано двойным кликом
+            if name_item not in self.parent.right_window.dict_name_open_procedures.keys():
+                scroll = Procedure_widget_scroll(self.parent.right_window, item)
+                self.parent.right_window.dict_name_open_procedures[name_item] = scroll
+                self.parent.right_window.tab_main.addTab(scroll, name_item)
+                # Поток для выполнения
+                stream = threading.Thread(target=scroll.widget.execute_procedure)
+                self.parent.right_window.dict_streams[name_item] = stream
+
+            procedure = self.parent.right_window.dict_name_open_procedures[name_item].widget
+            if procedure.indicator_nods == 0:
+                procedure.defining_nodes()
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
